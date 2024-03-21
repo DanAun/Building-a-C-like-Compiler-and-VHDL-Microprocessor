@@ -4,9 +4,45 @@
 /* Include necessary headers */
 #include <stdio.h>
 #include <stdlib.h>
+#define SYMBOL_NAME_LENGTH 20
+#define SYMBOL_TABLE_SIZE 255
 
 /* Declare any necessary global variables or functions */
+
+struct Symbol {
+  char name[SYMBOL_NAME_LENGTH]; // Name of the symbol
+};
+
+struct Symbol tableSymbol[SYMBOL_TABLE_SIZE];
+
+/* Initilisaes tableSymbol with empty string names */
+void init_tableSymbol(){
+  for (int i; i < sizeof(&tableSymbol); i++) {
+  strcpy(tableSymbol[i].name, "");
+  }
+}
+
+void insertSymbol(struct Symbol element) {
+  int i=0;
+  while(tableSymbol[i].name != ""){
+    i++;
+  }
+  tableSymbol[i] = element;
+}
+
+void print_table(struct Symbol * table) {
+  printf("Table:\n");
+  int i;
+  while(table[i].name != "") {
+    printf(",%s", table[i].name);
+    i++;
+  }
+}
+
+init_tableSymbol();
 %}
+
+
 
 %union {
     int num;
@@ -15,7 +51,7 @@
 /* Bison declarations section */
 %token <num> tNB
 %token <str> tID
-%token tINT tVOID tMAIN tIF tELSE tWHILE tRETURN tPRINTF tADD tSUB tMUL tDIV tLT tGT tNE tEQ tGE tLE tASSIGN tAND tOR tNOT tLBRACE tRBRACE tLPAR tRPAR tSEMI tCOMMA tSEMI tERROR
+%token tINT tVOID tMAIN tIF tELSE tWHILE tRETURN tPRINTF tADD tSUB tMUL tDIV tLT tGT tNE tEQ tGE tLE tASSIGN tAND tOR tNOT tLBRACE tRBRACE tLPAR tRPAR tSEMI tCOMMA tERROR
 %token tCONST 
 
 /* Define your grammar rules here */
@@ -49,7 +85,7 @@ body:
 
 parametres_func_declaration:
   tVOID
-| declaration_type tID
+| declaration_type tID {struct Symbol sym = {$2}; insertSymbol(sym); print_table(&tableSymbol);}
 | declaration_type tID tCOMMA parametres_func_declaration
  ;
 
