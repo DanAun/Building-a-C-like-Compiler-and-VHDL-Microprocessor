@@ -1,11 +1,9 @@
-//int b = 4;
-main() {
-    //int i, j,k ,r;
-    //const a;
-    //i=5e+2 ;
+main(int a, int b,int c) { 
+    int i, j,k ,r;
+    i =3 ;
     j=4 ;
-    k=8 ;
-    //printf (i) ;
-    //r=(i+j)*(i+k/j) ;
-    //printf ( r ) ;
+    k=5e+2 ;
+    printf (i) ;
+    r=(i+j)*(i+k/j) ;
+    printf ( r );
 }

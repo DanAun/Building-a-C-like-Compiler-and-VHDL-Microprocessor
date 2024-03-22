@@ -39,9 +39,9 @@ return { return tRETURN; }
 printf { return tPRINTF; } /*
 
  Matches identifiers and integers */
-[a-zA-Z][a-zA-Z0-9]* { yylval.str = yytext; return tID; } // Matches an identifier and prints it
+[a-zA-Z][a-zA-Z0-9]* { yylval.str = strdup(yytext); return tID; } // Matches an identifier and prints it
 [-+]?[0-9]+ { yylval.num = atoi(yytext); return tNB; }
-[-+]?[0-9]+e[-+]?[0-9]+ { printf("tNB-SN: '%.0f[0x%x]'\n", atof(yytext), (int)atof(yytext)); return tNB;/* Matches a number in scientific notation and prints it in decimal format and converts it to hexadecimal format*/ }
+[-+]?[0-9]+e[-+]?[0-9]+ { /*printf("tNB-SN: '%.0f[0x%x]'\n", atof(yytext), (int)atof(yytext));*/ return tNB;/* Matches a number in scientific notation and prints it in decimal format and converts it to hexadecimal format*/ }
 0x[0-9A-Fa-f]+ {yylval.num = strtol(yytext, NULL, 16); return tNB; /* Matches a hexadecimal number and prints it and converts it to decimal format*/ } /*
 
  Matches symbols */

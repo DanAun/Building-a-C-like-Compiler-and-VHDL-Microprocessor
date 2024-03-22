@@ -4,42 +4,12 @@
 /* Include necessary headers */
 #include <stdio.h>
 #include <stdlib.h>
-#define SYMBOL_NAME_LENGTH 20
-#define SYMBOL_TABLE_SIZE 255
+#include "tableSymbol.h"
 
 /* Declare any necessary global variables or functions */
 
-struct Symbol {
-  char name[SYMBOL_NAME_LENGTH]; // Name of the symbol
-};
-
 struct Symbol tableSymbol[SYMBOL_TABLE_SIZE];
 
-/* Initilisaes tableSymbol with empty string names */
-void init_tableSymbol(){
-  for (int i; i < sizeof(&tableSymbol); i++) {
-  strcpy(tableSymbol[i].name, "");
-  }
-}
-
-void insertSymbol(struct Symbol element) {
-  int i=0;
-  while(tableSymbol[i].name != ""){
-    i++;
-  }
-  tableSymbol[i] = element;
-}
-
-void print_table(struct Symbol * table) {
-  printf("Table:\n");
-  int i;
-  while(table[i].name != "") {
-    printf(",%s", table[i].name);
-    i++;
-  }
-}
-
-init_tableSymbol();
 %}
 
 
@@ -53,6 +23,7 @@ init_tableSymbol();
 %token <str> tID
 %token tINT tVOID tMAIN tIF tELSE tWHILE tRETURN tPRINTF tADD tSUB tMUL tDIV tLT tGT tNE tEQ tGE tLE tASSIGN tAND tOR tNOT tLBRACE tRBRACE tLPAR tRPAR tSEMI tCOMMA tERROR
 %token tCONST 
+%type <num> equation
 
 /* Define your grammar rules here */
 %%
@@ -62,41 +33,56 @@ input:
 |  main_declaration {printf("Parsed whole program without errors\n");}
   ;
 
-declaration_type:
-  tINT
+return_type:
+| tINT
 | tVOID
   ;
 
 main_declaration:
-  declaration_type tMAIN tLPAR parametres_func_declaration tRPAR tLBRACE body tRBRACE
-| declaration_type tMAIN tLPAR tRPAR tLBRACE body tRBRACE
-| tMAIN tLPAR parametres_func_declaration tRPAR tLBRACE body tRBRACE
-| tMAIN tLPAR tRPAR tLBRACE body tRBRACE
+  return_type tMAIN tLPAR tRPAR tLBRACE body tRBRACE
+| return_type tMAIN tLPAR tVOID tRPAR tLBRACE body tRBRACE
+| return_type tMAIN tLPAR parametres_declaration tRPAR tLBRACE body tRBRACE
   ;
 
 function_declaration:
-  declaration_type tID tLPAR parametres_func_declaration tRPAR tLBRACE body tRBRACE
-| declaration_type tID tLPAR tRPAR tLBRACE body tRBRACE
+  return_type tID tLPAR tRPAR tLBRACE body tRBRACE
+| return_type tID tLPAR tVOID tRPAR tLBRACE body tRBRACE
+| return_type tID tLPAR parametres_declaration tRPAR tLBRACE body tRBRACE
   ;
 
 body:
 | exp body
   ;
 
-parametres_func_declaration:
-  tVOID
-| declaration_type tID {struct Symbol sym = {$2}; insertSymbol(sym); print_table(&tableSymbol);}
-| declaration_type tID tCOMMA parametres_func_declaration
+parametres_declaration:
+  var_declaration
+| var_declaration tCOMMA parametres_declaration
  ;
 
-parametres:
-  equation tCOMMA parametres
-| equation
+var_declaration:
+  int_or_const tID 
+  ;
+
+multi_var_declaration:
+  int_or_const tID more_declarations
+  ;
+
+more_declarations:
+| tCOMMA tID more_declarations
+  ;
+
+fun_call_parametres:
+  equation
+| equation tCOMMA fun_call_parametres
   ;
 
 exp:
-  int_declaration
-| assignment
+  var_declaration tSEMI // Declares 1 variable
+| var_declaration assignment tSEMI // Declares 1 variable and assigns it a value
+| multi_var_declaration tSEMI // Declares multiple variables
+| multi_var_declaration assignment tSEMI // Declares multiple variables and assigns a value to them
+//TODO:
+| tID assignment //CHECK NESTE GANG GJLØRE FERDIG EXP
 | if_case
 | ifelse_case
 | while_case
@@ -107,23 +93,14 @@ exp:
 printf:
     tPRINTF tLPAR tID tRPAR tSEMI
     ;
-int_const:
+int_or_const:
   tINT
 | tCONST
   ;
 
-int_declaration:
-  int_const tID tSEMI
-| int_const multi_int_declaration tSEMI
-| int_const tID tASSIGN equation tSEMI
-| int_const multi_int_declaration tASSIGN equation tSEMI
-| int_const tID tASSIGN function_call tSEMI
-| int_const multi_int_declaration tASSIGN function_call tSEMI
-  ;
-
 multi_int_declaration:
-  tID tCOMMA multi_int_declaration
-| tID
+  tID tCOMMA multi_int_declaration { struct Symbol sym; strcpy(sym.name, $1); insertSymbol(sym, &tableSymbol); print_table(&tableSymbol);}
+| tID { struct Symbol sym; strcpy(sym.name, $1); insertSymbol(sym, &tableSymbol); print_table(&tableSymbol);}
   ;
 
 if_case:
@@ -139,8 +116,8 @@ while_case:
   ;
 
 assignment:
-  tID tASSIGN equation tSEMI
-| tID tASSIGN function_call tSEMI
+  tASSIGN equation tSEMI
+| tASSIGN function_call tSEMI
   ;
 
 return_case:
@@ -149,12 +126,12 @@ return_case:
   ;
 
 function_call:
-  tID tLPAR parametres tRPAR
+  tID tLPAR fun_call_parametres tRPAR
 
 equation:
   tID
 | tNB
-| equation tADD equation
+| equation tADD equation {$$ = atoi($1) + atoi($3);}
 | equation tSUB equation
 | equation tMUL equation
 | equation tDIV equation
