@@ -4,6 +4,7 @@
 /* Include necessary headers */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "tableSymbol.h"
 
 /* Declare any necessary global variables or functions */
@@ -24,6 +25,10 @@ struct Symbol tableSymbol[SYMBOL_TABLE_SIZE];
 %token tINT tVOID tMAIN tIF tELSE tWHILE tRETURN tPRINTF tADD tSUB tMUL tDIV tLT tGT tNE tEQ tGE tLE tASSIGN tAND tOR tNOT tLBRACE tRBRACE tLPAR tRPAR tSEMI tCOMMA tERROR
 %token tCONST 
 %type <num> equation
+%type <num> assignment // Address of variable being assigned, no num is passed if assignement is a value
+%type <num> var_declaration // Address in symbol of tables of the variable being declared
+%type <num> multi_var_declaration // Address in symbol of tables of the variable being declared
+%type <num> more_declarations // Address in symbol of tables of the variable being declared
 
 /* Define your grammar rules here */
 %%
@@ -60,15 +65,30 @@ parametres_declaration:
  ;
 
 var_declaration:
-  int_or_const tID 
+  int_or_const tID { $$ = getSymbolAddr($2, &tableSymbol); struct Symbol sym; strcpy(sym.name, $2); insertSymbol(sym, &tableSymbol); print_table(&tableSymbol);}
   ;
 
 multi_var_declaration:
-  int_or_const tID more_declarations
+  var_declaration more_declarations { if($2 == -1) {$$ = $1;} else {$$ = $2;}}
   ;
 
-more_declarations:
-| tCOMMA tID more_declarations
+/*HJEEEEEEEEEEEEEEEEEEEEEEEEEELPPPPPPPPPPP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  LESE DETTE"!!!!:
+
+  EMILIE TAKE THE WORD:
+
+  i mean... segmentation fault?
+  vet ikke hvorfor det skjer
+
+  OK takk for ignenting emilie
+
+  Noe galt som skjer når vi gjør $$ = -1; i more_declarations
+  */
+
+*/
+more_declarations: { $$ = -1;}
+| tCOMMA tID more_declarations { if($3 == -1) {$$ = getSymbolAddr($2, &tableSymbol);} else {$$ = $3;} struct Symbol sym; strcpy(sym.name, $2); insertSymbol(sym, &tableSymbol); print_table(&tableSymbol);}
   ;
 
 fun_call_parametres:
@@ -77,34 +97,26 @@ fun_call_parametres:
   ;
 
 exp:
-  var_declaration tSEMI // Declares 1 variable
-| var_declaration assignment tSEMI // Declares 1 variable and assigns it a value
-| multi_var_declaration tSEMI // Declares multiple variables
-| multi_var_declaration assignment tSEMI // Declares multiple variables and assigns a value to them
-//TODO:
-| tID assignment //CHECK NESTE GANG GJLØRE FERDIG EXP
+  multi_var_declaration tSEMI // Declares multiple variables
+| multi_var_declaration assignment tSEMI /* Declares multiple variables and assigns a value to them*/ { printf("COP %d %d \n", getSymbolAddr($1, &tableSymbol), peek(&tableSymbol)) ; pop(&tableSymbol);}// Assigns a value to a variable
+| tID assignment tSEMI { printf("COP %d %d \n", getSymbolAddr($1, &tableSymbol), peek(&tableSymbol)) ; pop(&tableSymbol);}// Assigns a value to a variable
 | if_case
 | ifelse_case
 | while_case
-| printf
-| return_case
+| printf tSEMI
+| return_case tSEMI // returns a value
   ;
 
 printf:
-    tPRINTF tLPAR tID tRPAR tSEMI
+    tPRINTF tLPAR tID tRPAR { printf("PRI %d \n", getSymbolAddr($3, &tableSymbol));}
     ;
 int_or_const:
   tINT
 | tCONST
   ;
 
-multi_int_declaration:
-  tID tCOMMA multi_int_declaration { struct Symbol sym; strcpy(sym.name, $1); insertSymbol(sym, &tableSymbol); print_table(&tableSymbol);}
-| tID { struct Symbol sym; strcpy(sym.name, $1); insertSymbol(sym, &tableSymbol); print_table(&tableSymbol);}
-  ;
-
 if_case:
-  tIF tLPAR boolean_eq tRPAR tLBRACE body tRBRACE
+  tIF tLPAR boolean_eq tRPAR tLBRACE body tRBRACE {printf("JMF %d %s \n", peek(&tableSymbol), "???");}
   ;
 
 ifelse_case:
@@ -116,25 +128,26 @@ while_case:
   ;
 
 assignment:
-  tASSIGN equation tSEMI
-| tASSIGN function_call tSEMI
+  tASSIGN equation { $$ = $2;}
+| tASSIGN function_call
   ;
 
 return_case:
-  tRETURN tID tSEMI
-| tRETURN tNB tSEMI
+  tRETURN tID
+| tRETURN tNB
   ;
 
 function_call:
   tID tLPAR fun_call_parametres tRPAR
-
+  ;
+  
 equation:
-  tID
-| tNB
-| equation tADD equation {$$ = atoi($1) + atoi($3);}
-| equation tSUB equation
-| equation tMUL equation
-| equation tDIV equation
+  tID { struct Symbol sym; strcpy(sym.name, "@"); insertSymbol(sym, &tableSymbol); print_table(&tableSymbol); printf("COP %d %d \n", peek(&tableSymbol), getSymbolAddr($1, &tableSymbol));} // We chose '@' because its a char not often used}
+| tNB { struct Symbol sym; strcpy(sym.name, "@"); insertSymbol(sym, &tableSymbol); print_table(&tableSymbol); printf("AFC %d %d \n", peek(&tableSymbol), $1);} // We chose '@' because its a char not often used
+| equation tADD equation { int tmp = pop(&tableSymbol); printf("ADD %d %d %d \n", peek(&tableSymbol), peek(&tableSymbol), tmp);}
+| equation tSUB equation { int tmp = pop(&tableSymbol); printf("SOU %d %d %d \n", peek(&tableSymbol), peek(&tableSymbol), tmp);}
+| equation tMUL equation { int tmp = pop(&tableSymbol); printf("MUL %d %d %d \n", peek(&tableSymbol), peek(&tableSymbol), tmp);}
+| equation tDIV equation { int tmp = pop(&tableSymbol); printf("DIV %d %d %d \n", peek(&tableSymbol), peek(&tableSymbol), tmp);}
 | tLPAR equation tRPAR
   ;
 
@@ -150,8 +163,8 @@ boolean_operator:
   ;
 
 boolean_eq:
-  tID
-| tNB
+  tID { struct Symbol sym; strcpy(sym.name, "@"); insertSymbol(sym, &tableSymbol); print_table(&tableSymbol); printf("COP %d %d \n", peek(&tableSymbol), getSymbolAddr($1, &tableSymbol));} // We chose '@' because its a char not often used
+| tNB { struct Symbol sym; strcpy(sym.name, "@"); insertSymbol(sym, &tableSymbol); print_table(&tableSymbol); printf("AFC %d %d \n", peek(&tableSymbol), $1);} // We chose '@' because its a char not often used
 | tNOT boolean_eq
 | boolean_eq boolean_operator boolean_eq
   ;
