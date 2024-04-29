@@ -11,5 +11,7 @@ void insertSymbol(struct Symbol element, struct Symbol * table);
 void print_table(struct Symbol * table);
 int getSymbolAddr(char * sym, struct Symbol * table);
 int getTopAddr(struct Symbol * table);
+int peek(struct Symbol * table);
+int pop(struct Symbol * table);
 
 #endif

@@ -30,7 +30,7 @@ int pop(struct Symbol * table) {
 }
 
 void print_table(struct Symbol * table) {
-  printf("Table of Symbol: ");
+  printf("Table of Symbol: \n");
   for (int i = 0;i<ptr; i++) {
     printf("%s, ", table[i].name);
   }
