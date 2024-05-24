@@ -1,6 +1,13 @@
+int f(int a) {  
+    return a + 2;
+}
+
 main(){
-    int a = 0;
+    int a = 7;
     if (a) {
-        a = 6;
+        int b = 8;
+        if (b) {
+            int c = 9;
+        }
     }
 }

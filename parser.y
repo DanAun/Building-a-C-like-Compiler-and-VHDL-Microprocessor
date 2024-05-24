@@ -36,26 +36,59 @@ struct Instruction tableAssembly[ASSEMBLY_TABLE_SIZE];
 %%
 
 input:
-|  function_declaration input 
-|  main_declaration {printf("Parsed whole program without errors\n");}
+| function_declaration input
+| main_declaration { printf("Parsed whole program\n");}
   ;
-
+  
 return_type:
 | tINT
 | tVOID
   ;
 
 main_declaration:
-  return_type tMAIN tLPAR tRPAR tLBRACE body tRBRACE
-| return_type tMAIN tLPAR tVOID tRPAR tLBRACE body tRBRACE
-| return_type tMAIN tLPAR parametres_declaration tRPAR tLBRACE body tRBRACE
+  return_type tMAIN {
+    upDateJMPInstruction(&tableAssembly);
+    print_instructions(&tableAssembly);
+  } 
+  tLPAR tRPAR tLBRACE body tRBRACE
+| return_type tMAIN {
+    upDateJMPInstruction(&tableAssembly);
+    print_instructions(&tableAssembly);
+  }
+  tLPAR tVOID tRPAR tLBRACE body tRBRACE
+| return_type tMAIN {
+    upDateJMPInstruction(&tableAssembly);
+    print_instructions(&tableAssembly);
+  } tLPAR parametres_declaration tRPAR tLBRACE body tRBRACE
   ;
 
 function_declaration:
-  return_type tID tLPAR tRPAR tLBRACE body tRBRACE
-| return_type tID tLPAR tVOID tRPAR tLBRACE body tRBRACE
-| return_type tID tLPAR parametres_declaration tRPAR tLBRACE body tRBRACE
+  return_type tID tLPAR tRPAR tLBRACE 
+  {
+    struct Instruction inst = {"JMP", -1, 0, 0};
+    insertInstruction(inst, &tableAssembly);
+    print_instructions(&tableAssembly);
+  }
+  body tRBRACE
+| return_type tID tLPAR tVOID tRPAR tLBRACE {
+    struct Instruction inst = {"JMP", -1, 0, 0};
+    insertInstruction(inst, &tableAssembly);
+    print_instructions(&tableAssembly);
+  }
+  body tRBRACE
+| return_type tID tLPAR {
+    struct Instruction inst = {"JMP", -1, 0, 0};
+    insertInstruction(inst, &tableAssembly);
+    print_instructions(&tableAssembly);
+  } 
+  parametres_declaration tRPAR tLBRACE body tRBRACE
   ;
+
+  /*{
+    struct Instruction inst = {"JMP", -1, 0, 0};
+    insertInstruction(inst, &tableAssembly);
+    print_instructions(&tableAssembly);
+  }*/
 
 body:
 | exp body
@@ -143,7 +176,9 @@ if_case:
   insertInstruction(inst, &tableAssembly);
   print_instructions(&tableAssembly);
   pop(&tableSymbol);}
-  tLBRACE body tRBRACE
+  tLBRACE body tRBRACE {
+  upDateJMFInstruction(&tableAssembly);
+  print_instructions(&tableAssembly);}
   ;
 
 ifelse_case:
@@ -160,8 +195,7 @@ assignment:
   ;
 
 return_case:
-  tRETURN tID
-| tRETURN tNB
+  tRETURN equation
   ;
 
 function_call:
