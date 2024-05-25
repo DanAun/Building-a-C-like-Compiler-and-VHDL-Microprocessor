@@ -1,6 +1,6 @@
 #ifndef TABLE_ASSEMBLY_H
 #define TABLE_ASSEMBLY_H
-#define COMMAND_NAME_LENGTH 3
+#define COMMAND_NAME_LENGTH 5
 #define ASSEMBLY_TABLE_SIZE 255
 
 struct Instruction {

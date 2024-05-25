@@ -37,7 +37,7 @@ struct Instruction tableAssembly[ASSEMBLY_TABLE_SIZE];
 
 input:
 | function_declaration input
-| main_declaration { printf("Parsed whole program\n");}
+| main_declaration { print_instructions(&tableAssembly); print_table(&tableSymbol); printf("Parsed whole program\n");}
   ;
   
 return_type:
@@ -48,17 +48,17 @@ return_type:
 main_declaration:
   return_type tMAIN {
     upDateJMPInstruction(&tableAssembly);
-    print_instructions(&tableAssembly);
+    //print_instructions(&tableAssembly);
   } 
   tLPAR tRPAR tLBRACE body tRBRACE
 | return_type tMAIN {
     upDateJMPInstruction(&tableAssembly);
-    print_instructions(&tableAssembly);
+    //print_instructions(&tableAssembly);
   }
   tLPAR tVOID tRPAR tLBRACE body tRBRACE
 | return_type tMAIN {
     upDateJMPInstruction(&tableAssembly);
-    print_instructions(&tableAssembly);
+    //print_instructions(&tableAssembly);
   } tLPAR parametres_declaration tRPAR tLBRACE body tRBRACE
   ;
 
@@ -67,28 +67,22 @@ function_declaration:
   {
     struct Instruction inst = {"JMP", -1, 0, 0};
     insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);
+    //print_instructions(&tableAssembly);
   }
   body tRBRACE
 | return_type tID tLPAR tVOID tRPAR tLBRACE {
     struct Instruction inst = {"JMP", -1, 0, 0};
     insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);
+    //print_instructions(&tableAssembly);
   }
   body tRBRACE
 | return_type tID tLPAR {
     struct Instruction inst = {"JMP", -1, 0, 0};
     insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);
+    //print_instructions(&tableAssembly);
   } 
   parametres_declaration tRPAR tLBRACE body tRBRACE
   ;
-
-  /*{
-    struct Instruction inst = {"JMP", -1, 0, 0};
-    insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);
-  }*/
 
 body:
 | exp body
@@ -103,32 +97,20 @@ var_declaration:
   int_or_const tID { 
     struct Symbol sym; strcpy(sym.name, $2); 
     insertSymbol(sym, &tableSymbol); 
-    $$ = getSymbolAddr(sym.name, &tableSymbol); print_table(&tableSymbol);}
+    $$ = getSymbolAddr(sym.name, &tableSymbol); 
+    //print_table(&tableSymbol);
+    }
   ;
 
 multi_var_declaration:
-//var dec = a i vår case, more_dec = -1
   var_declaration more_declarations { if($2 == -1) {$$ = $1;} else {$$ = $2;}}
   ;
-
-/*HJEEEEEEEEEEEEEEEEEEEEEEEEEELPPPPPPPPPPP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  LESE DETTE"!!!!:
-
-  EMILIE TAKE THE WORD:
-
-  i mean... segmentation fault?
-  vet ikke hvorfor det skjer
-
-  OK takk for ignenting emilie
-
-  Noe galt som skjer når vi gjør $$ = -1; i more_declarations
-  */
 
 more_declarations: { $$ = -1;}
 | tCOMMA tID more_declarations {
   struct Symbol sym; strcpy(sym.name, $2); 
-  insertSymbol(sym, &tableSymbol); print_table(&tableSymbol);
+  insertSymbol(sym, &tableSymbol); 
+  //print_table(&tableSymbol);
   if($3 == -1) {
       $$ = getSymbolAddr($2, &tableSymbol);
       } else {$$ = $3;}
@@ -143,15 +125,15 @@ fun_call_parametres:
 exp:
   multi_var_declaration tSEMI // Declares multiple variables
 | multi_var_declaration assignment tSEMI /* Declares multiple variables and assigns a value to them*/ {
-  struct Instruction inst = {"COP", $1, peek(&tableSymbol), 0}; 
-  insertInstruction(inst, &tableAssembly);
-  print_instructions(&tableAssembly); 
-  pop(&tableSymbol);}// Assigns a value to a variable
+    struct Instruction inst = {"COP", $1, peek(&tableSymbol), 0}; 
+    insertInstruction(inst, &tableAssembly);
+    //print_instructions(&tableAssembly); 
+    pop(&tableSymbol);}// Assigns a value to a variable
 | tID assignment tSEMI {
-  struct Instruction inst = {"COP", getSymbolAddr($1, &tableSymbol), peek(&tableSymbol), 0}; 
-  insertInstruction(inst, &tableAssembly);
-  print_instructions(&tableAssembly);
-  pop(&tableSymbol);}// Assigns a value to a variable
+    struct Instruction inst = {"COP", getSymbolAddr($1, &tableSymbol), peek(&tableSymbol), 0}; 
+    insertInstruction(inst, &tableAssembly);
+    //print_instructions(&tableAssembly);
+    pop(&tableSymbol);}// Assigns a value to a variable
 | if_case
 | ifelse_case
 | while_case
@@ -160,11 +142,13 @@ exp:
   ;
 
 printf:
-    tPRINTF tLPAR tID tRPAR { 
+  tPRINTF tLPAR tID tRPAR { 
     struct Instruction inst = {"PRI", getSymbolAddr($3, &tableSymbol), 0, 0};
     insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);}
-    ;
+    //print_instructions(&tableAssembly);
+  }
+  ;
+
 int_or_const:
   tINT
 | tCONST
@@ -172,13 +156,14 @@ int_or_const:
 
 if_case:
   tIF tLPAR boolean_eq tRPAR {
-  struct Instruction inst = {"JMF", peek(&tableSymbol), -1, 0};
-  insertInstruction(inst, &tableAssembly);
-  print_instructions(&tableAssembly);
-  pop(&tableSymbol);}
+    struct Instruction inst = {"JMF", peek(&tableSymbol), -1, 0};
+    insertInstruction(inst, &tableAssembly);
+    //print_instructions(&tableAssembly);
+    pop(&tableSymbol);}
   tLBRACE body tRBRACE {
-  upDateJMFInstruction(&tableAssembly);
-  print_instructions(&tableAssembly);}
+    upDateJMFInstruction(&tableAssembly);
+    //print_instructions(&tableAssembly);
+  }
   ;
 
 ifelse_case:
@@ -186,7 +171,15 @@ ifelse_case:
   ;
 
 while_case:
-  tWHILE tLPAR boolean_eq tRPAR tLBRACE body tRBRACE
+  tWHILE tLPAR boolean_eq tRPAR {
+    struct Instruction inst = {"JMF", peek(&tableSymbol), -1, 0};
+    insertInstruction(inst, &tableAssembly);
+    //print_instructions(&tableAssembly);
+    pop(&tableSymbol);}
+  tLBRACE body tRBRACE {
+    upDateJMFInstruction(&tableAssembly);
+    //print_instructions(&tableAssembly);
+  }
   ;
 
 assignment:
@@ -206,45 +199,66 @@ equation:
   tID { 
     struct Symbol sym; strcpy(sym.name, "@"); 
     insertSymbol(sym, &tableSymbol); 
-    print_table(&tableSymbol); 
+    //print_table(&tableSymbol); 
     struct Instruction inst = {"COP", peek(&tableSymbol), getSymbolAddr($1, &tableSymbol), 0};
     insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);} // We chose '@' because its a char not often used}
+    //print_instructions(&tableAssembly); // We chose '@' because its a char not often used
+  }
 | tNB { 
     struct Symbol sym; strcpy(sym.name, "@"); 
     insertSymbol(sym, &tableSymbol); 
-    print_table(&tableSymbol); 
+    //print_table(&tableSymbol); 
     struct Instruction inst = {"AFC", peek(&tableSymbol), $1, 0}; 
     insertInstruction(inst, &tableAssembly); 
-    print_instructions(&tableAssembly);} // We chose '@' because its a char not often used
+    //print_instructions(&tableAssembly); // We chose '@' because its a char not often used
+  }
 | equation tADD equation { 
     int tmp = pop(&tableSymbol); 
     struct Instruction inst = {"ADD", peek(&tableSymbol), peek(&tableSymbol), tmp};
     insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);}
+    //print_instructions(&tableAssembly);
+  }
 | equation tSUB equation { 
     int tmp = pop(&tableSymbol); 
     struct Instruction inst = {"SOU", peek(&tableSymbol), peek(&tableSymbol), tmp};
     insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);}
+    //print_instructions(&tableAssembly);
+  }
 | equation tMUL equation { 
     int tmp = pop(&tableSymbol); 
     struct Instruction inst = {"MUL", peek(&tableSymbol), peek(&tableSymbol), tmp};
     insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);}
+    //print_instructions(&tableAssembly);
+  }
 | equation tDIV equation { 
     int tmp = pop(&tableSymbol); 
     struct Instruction inst = {"DIV", peek(&tableSymbol), peek(&tableSymbol), tmp};
     insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);}
+    //print_instructions(&tableAssembly);
+  }
 | tLPAR equation tRPAR
   ;
 
 boolean_operator:
-  tLT
-| tGT
+  tLT {
+    int tmp = pop(&tableSymbol); 
+    struct Instruction inst = {"INF", peek(&tableSymbol), peek(&tableSymbol), tmp};
+    insertInstruction(inst, &tableAssembly);
+    //print_instructions(&tableAssembly);
+  }
+| tGT {
+    int tmp = pop(&tableSymbol); 
+    struct Instruction inst = {"SUP", peek(&tableSymbol), peek(&tableSymbol), tmp};
+    insertInstruction(inst, &tableAssembly);
+    //print_instructions(&tableAssembly);
+  }
 | tNE
-| tEQ
+| tEQ {
+    int tmp = pop(&tableSymbol); 
+    struct Instruction inst = {"EQU", peek(&tableSymbol), peek(&tableSymbol), tmp};
+    insertInstruction(inst, &tableAssembly);
+    //print_instructions(&tableAssembly);
+  }
 | tGE
 | tLE
 | tAND
@@ -255,17 +269,19 @@ boolean_eq:
   tID { 
     struct Symbol sym; strcpy(sym.name, "@"); 
     insertSymbol(sym, &tableSymbol); 
-    print_table(&tableSymbol); 
+    //print_table(&tableSymbol); 
     struct Instruction inst = {"COP", peek(&tableSymbol), getSymbolAddr($1, &tableSymbol), 0};
     insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);} // We chose '@' because its a char not often used
+    //print_instructions(&tableAssembly); // We chose '@' because its a char not often used
+  }
 | tNB { 
     struct Symbol sym; strcpy(sym.name, "@"); 
     insertSymbol(sym, &tableSymbol); 
-    print_table(&tableSymbol); 
+    //print_table(&tableSymbol); 
     struct Instruction inst = {"AFC", peek(&tableSymbol), $1, 0};
     insertInstruction(inst, &tableAssembly);
-    print_instructions(&tableAssembly);} // We chose '@' because its a char not often used
+    //print_instructions(&tableAssembly); // We chose '@' because its a char not often used
+  }
 | tNOT boolean_eq
 | boolean_eq boolean_operator boolean_eq
   ;
