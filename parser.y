@@ -37,7 +37,7 @@ struct Instruction tableAssembly[ASSEMBLY_TABLE_SIZE];
 
 input:
 | function_declaration input
-| main_declaration { print_instructions(&tableAssembly); print_table(&tableSymbol); printf("Parsed whole program\n");}
+| main_declaration { print_instructions(&tableAssembly); print_table(&tableSymbol); toInstructionAddress(&tableAssembly); printf("\nParsed whole program\n");}
   ;
   
 return_type:

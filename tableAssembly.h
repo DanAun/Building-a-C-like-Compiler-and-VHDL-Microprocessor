@@ -13,6 +13,7 @@ struct Instruction {
 void insertInstruction(struct Instruction element, struct Instruction * table);
 void upDateJMFInstruction(struct Instruction * table);
 void upDateJMPInstruction(struct Instruction * table);
+void toInstructionAddress(struct Instruction * table);
 void print_instructions(struct Instruction * table);
 
 #endif
