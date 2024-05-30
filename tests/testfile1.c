@@ -1,10 +1,10 @@
 main(int a, int b,int c) { 
-    int i, j,k ,r;
-    i =3 ;
-    j=4 ;
-    k=5e+2 ;
-    printf (i) ;
-    r=(i+j)*(i+k/j);
-    r=(i+j);
-    printf ( r );
+    a = 7;
+    if (a) {
+        int d = (a+4)*(b/c);
+        if (b) {
+            c = 9-a;
+            printf( b );
+        }
+    }
 }

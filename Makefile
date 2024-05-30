@@ -14,4 +14,4 @@ clean:
 
 test: all
 	echo "Running test...\n"
-	./out < ./tests/testfile2.c
+	./out < ./tests/testfile1.c
