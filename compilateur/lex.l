@@ -1,3 +1,5 @@
+/* This is a lexical analyzer for the C language. It is a homework assignment for Automates et Languages class. */
+
 /* Definitions */
 %{
     #include "parser.tab.h"
@@ -38,8 +40,8 @@ printf { return tPRINTF; } /*
 
  Matches identifiers and integers */
 [a-zA-Z][a-zA-Z0-9]* { yylval.str = strdup(yytext); return tID; } // Matches an identifier and prints it
-[0-9]+ { yylval.num = atoi(yytext); return tNB; }
-[0-9]+e[-+]?[0-9]+ { yylval.num = atof(yytext); /*printf("tNB-SN: '%.0f[0x%x]'\n", atof(yytext), (int)atof(yytext));*/ return tNB;/* Matches a number in scientific notation and prints it in decimal format and converts it to hexadecimal format*/ }
+[-+]?[0-9]+ { yylval.num = atoi(yytext); return tNB; }
+[-+]?[0-9]+e[-+]?[0-9]+ { yylval.num = atof(yytext); /*printf("tNB-SN: '%.0f[0x%x]'\n", atof(yytext), (int)atof(yytext));*/ return tNB;/* Matches a number in scientific notation and prints it in decimal format and converts it to hexadecimal format*/ }
 0x[0-9A-Fa-f]+ {yylval.num = strtol(yytext, NULL, 16); return tNB; /* Matches a hexadecimal number and prints it and converts it to decimal format*/ } /*
 
  Matches symbols */
@@ -67,3 +69,18 @@ printf { return tPRINTF; } /*
 . { return tERROR; /* Compilation error, when unknown expression encountered */}
 
 %%
+
+/*int main(int argc, char **argv) {
+    if (argc != 2) {
+        fprintf(stderr, "usage: %s filename\n", argv[0]);
+        exit(1);
+    }
+    yyin = fopen(argv[1], "r");
+    if (!yyin) {
+        fprintf(stderr, "invalid filename: %s\n", argv[1]);
+        exit(2);
+    }
+    yylex();
+    fclose(yyin);
+    return 0;
+}*/
