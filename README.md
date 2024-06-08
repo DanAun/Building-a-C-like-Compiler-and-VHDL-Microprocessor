@@ -1,4 +1,4 @@
-# Simple C-like Language Compiler and VHDL Microprocessor
+# Building a C-like Compiler and VHDL Microprocessor
 
 ## Project Overview
 
